@@ -1,0 +1,62 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install ruff
+
+      - name: Lint
+        run: ruff check app tests
+
+      - name: Run tests
+        env:
+          DATABASE_URL: sqlite:///./ci_test.db
+          MPESA_MOCK_MODE: "true"
+          OTP_DEBUG_ECHO: "true"
+          JWT_SECRET: ci-test-secret
+        run: pytest tests/ -v
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t kejaflix-api:${{ github.sha }} .
+
+      # Swap-in point: push to your container registry, e.g.
+      #   - name: Push to registry
+      #     run: |
+      #       docker tag kejaflix-api:${{ github.sha }} ghcr.io/<org>/kejaflix-api:${{ github.sha }}
+      #       docker push ghcr.io/<org>/kejaflix-api:${{ github.sha }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    steps:
+      - name: Deploy
+        run: |
+          echo "Swap-in point: trigger your deployment here, e.g."
+          echo "  - AWS ECS: aws ecs update-service --force-new-deployment ..."
+          echo "  - Google Cloud Run: gcloud run deploy kejaflix-api --image ..."
+          echo "Also run 'alembic upgrade head' against the production DB before/at deploy."
