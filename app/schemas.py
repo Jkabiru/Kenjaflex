@@ -229,6 +229,8 @@ class ResultOut(BaseModel):
     property_name: str
     property_lat: float
     property_lng: float
+    property_estate: str | None = None
+    property_amenities: list[str] = []
     manager_phone: str
     unit_id: int
     unit_type: UnitType
@@ -289,6 +291,9 @@ class FieldAgentCaptureOut(BaseModel):
     status: CaptureStatus
     admin_notes: str | None
     reward_amount: float
+    property_data_json: dict | None = None
+    gps_lat: float | None = None
+    gps_lng: float | None = None
     created_at: datetime
 
 
@@ -308,6 +313,7 @@ class PayoutOut(BaseModel):
     id: int
     amount: float
     status: PaymentStatus
+    created_at: datetime
 
 
 # ---------------------------------------------------------------------------

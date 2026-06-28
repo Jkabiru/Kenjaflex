@@ -205,6 +205,8 @@ def get_search_results(
                 property_name=prop.name,
                 property_lat=prop.lat,
                 property_lng=prop.lng,
+                property_estate=prop.estate,
+                property_amenities=prop.amenities or [],
                 manager_phone=manager.phone,
                 unit_id=unit.id,
                 unit_type=unit.type,
