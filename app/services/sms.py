@@ -1,6 +1,8 @@
 """
 SMS service using Africa's Talking.
 Falls back to a logged mock if AT_API_KEY isn't set (local/dev use only).
+Sandbox mode doesn't support custom sender IDs, so we only pass one
+when AT_USERNAME isn't 'sandbox'.
 """
 import logging
 import africastalking
@@ -27,7 +29,13 @@ def send_sms(phone: str, message: str) -> bool:
 
     try:
         sms = _get_sms_client()
-        response = sms.send(message, [phone], sender_id=settings.AT_SENDER_ID)
+        is_sandbox = settings.AT_USERNAME.strip().lower() == "sandbox"
+
+        if is_sandbox:
+            response = sms.send(message, [phone])
+        else:
+            response = sms.send(message, [phone], sender_id=settings.AT_SENDER_ID)
+
         logger.info("AT raw response to=%s response=%s", phone, response)
 
         recipients = response.get("SMSMessageData", {}).get("Recipients", [])
