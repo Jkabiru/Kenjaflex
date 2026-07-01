@@ -10,3 +10,4 @@ httpx
 pytest
 alembic
 psycopg2-binary
+africastalking
