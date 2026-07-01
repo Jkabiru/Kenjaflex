@@ -28,7 +28,16 @@ def send_sms(phone: str, message: str) -> bool:
     try:
         sms = _get_sms_client()
         response = sms.send(message, [phone], sender_id=settings.AT_SENDER_ID)
-        status = response["SMSMessageData"]["Recipients"][0]["status"]
+        logger.info("AT raw response to=%s response=%s", phone, response)
+
+        recipients = response.get("SMSMessageData", {}).get("Recipients", [])
+        if not recipients:
+            logger.error(
+                "SMS send returned no recipients to=%s full_response=%s", phone, response
+            )
+            return False
+
+        status = recipients[0]["status"]
         if status != "Success":
             logger.error("SMS send failed to=%s status=%s response=%s", phone, status, response)
         return status == "Success"
